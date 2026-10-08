@@ -1,0 +1,150 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "JalDrishti backend: IAM-authenticated HTTP API; independent demo and real records; real token defense retained.",
+  "Parameters": {
+    "ProjectName": {
+      "Type": "String",
+      "Default": "jaldrishti-demo",
+      "AllowedPattern": "[a-z][a-z0-9-]{2,30}"
+    },
+    "FrontendOrigin": {
+      "Type": "String",
+      "Default": "http://127.0.0.1:3000",
+      "AllowedPattern": "https?://[^/]+"
+    },
+    "MaxConcurrency": {
+      "Type": "Number",
+      "Default": 2,
+      "AllowedValues": [0, 1, 2, 5]
+    },
+    "BackendAccessToken": {
+      "Type": "String",
+      "NoEcho": true,
+      "Default": "",
+      "Description": "Server-only Real Analysis token. Empty value fails closed."
+    }
+  },
+  "Conditions": {
+    "ReserveConcurrency": { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "MaxConcurrency" }, 0] }] }
+  },
+  "Resources": {
+    "CampusState": {
+      "Type": "AWS::DynamoDB::Table",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "TableName": { "Fn::Sub": "${ProjectName}-campus-state" },
+        "BillingMode": "PAY_PER_REQUEST",
+        "AttributeDefinitions": [
+          { "AttributeName": "campusId", "AttributeType": "S" }
+        ],
+        "KeySchema": [{ "AttributeName": "campusId", "KeyType": "HASH" }]
+      }
+    },
+    "HttpApi": {
+      "Type": "AWS::Serverless::HttpApi",
+      "Properties": {
+        "Name": { "Fn::Sub": "${ProjectName}-api" },
+        "StageName": "$default",
+        "Auth": { "EnableIamAuthorizer": true, "DefaultAuthorizer": "AWS_IAM" },
+        "CorsConfiguration": {
+          "AllowOrigins": [{ "Ref": "FrontendOrigin" }],
+          "AllowMethods": ["GET", "PUT", "POST", "OPTIONS"],
+          "AllowHeaders": ["content-type"],
+          "MaxAge": 300
+        },
+        "DefaultRouteSettings": {
+          "ThrottlingBurstLimit": 4,
+          "ThrottlingRateLimit": 2
+        }
+      }
+    },
+    "Backend": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "FunctionName": { "Fn::Sub": "${ProjectName}-backend" },
+        "Runtime": "nodejs24.x",
+        "Architectures": ["arm64"],
+        "Handler": "infra/lambda/entry.handler",
+        "CodeUri": ".build/",
+        "MemorySize": 128,
+        "Timeout": 15,
+        "ReservedConcurrentExecutions": {
+          "Fn::If": ["ReserveConcurrency", { "Ref": "MaxConcurrency" }, { "Ref": "AWS::NoValue" }]
+        },
+        "Environment": {
+          "Variables": {
+            "CAMPUS_TABLE_NAME": { "Ref": "CampusState" },
+            "JALDRISHTI_BACKEND_TOKEN": { "Ref": "BackendAccessToken" }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": ["dynamodb:GetItem", "dynamodb:PutItem"],
+                "Resource": { "Fn::GetAtt": ["CampusState", "Arn"] }
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "GetCampus": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": { "Ref": "HttpApi" },
+              "Path": "/campus/{campusId}",
+              "Method": "GET",
+              "PayloadFormatVersion": "2.0"
+            }
+          },
+          "PutCampus": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": { "Ref": "HttpApi" },
+              "Path": "/campus/{campusId}",
+              "Method": "PUT",
+              "PayloadFormatVersion": "2.0"
+            }
+          },
+          "Forecast": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": { "Ref": "HttpApi" },
+              "Path": "/forecast",
+              "Method": "POST",
+              "PayloadFormatVersion": "2.0"
+            }
+          },
+          "Environment": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": { "Ref": "HttpApi" },
+              "Path": "/environment/{campusId}",
+              "Method": "GET",
+              "PayloadFormatVersion": "2.0"
+            }
+          }
+        }
+      }
+    },
+    "BackendLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": { "Fn::Sub": "/aws/lambda/${ProjectName}-backend" },
+        "RetentionInDays": 7
+      }
+    }
+  },
+  "Outputs": {
+    "ApiBaseUrl": {
+      "Value": {
+        "Fn::Sub": "https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+      }
+    },
+    "CampusTableName": { "Value": { "Ref": "CampusState" } },
+    "BackendFunctionName": { "Value": { "Ref": "Backend" } }
+  }
+}

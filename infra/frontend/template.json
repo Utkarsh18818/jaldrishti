@@ -1,0 +1,112 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda-only frontend preparation; closed placeholder until direct ZIP upload/runtime configuration. Existing DynamoDB backend retained.",
+  "Resources": {
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "frontend-runtime-only",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:jaldrishti-real-backend"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/jaldrishti-frontend:*"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Frontend": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "jaldrishti-frontend",
+        "Runtime": "nodejs24.x",
+        "Architectures": [
+          "x86_64"
+        ],
+        "Handler": "run.sh",
+        "Role": {
+          "Fn::GetAtt": [
+            "Role",
+            "Arn"
+          ]
+        },
+        "MemorySize": 512,
+        "Timeout": 30,
+        "Code": {
+          "ZipFile": "exports.handler = async () => { throw new Error(\"Release not configured\"); };"
+        },
+        "Layers": [
+          "arn:aws:lambda:ap-southeast-2:753240598075:layer:LambdaAdapterLayerX86:30"
+        ],
+        "Environment": {
+          "Variables": {
+            "AWS_LAMBDA_EXEC_WRAPPER": "/opt/bootstrap",
+            "AWS_LWA_PORT": "8080",
+            "AWS_LWA_READINESS_CHECK_PATH": "/",
+            "NEXT_TELEMETRY_DISABLED": "1",
+            "NODE_ENV": "production",
+            "JALDRISHTI_BACKEND_FUNCTION_NAME": "jaldrishti-real-backend",
+            "JALDRISHTI_FRONTEND_ORIGIN": "https://pending.invalid"
+          }
+        }
+      }
+    },
+    "FrontendUrl": {
+      "Type": "AWS::Lambda::Url",
+      "Properties": {
+        "TargetFunctionArn": {
+          "Ref": "Frontend"
+        },
+        "AuthType": "AWS_IAM",
+        "InvokeMode": "BUFFERED"
+      }
+    }
+  },
+  "Outputs": {
+    "FrontendFunction": {
+      "Value": {
+        "Ref": "Frontend"
+      }
+    },
+    "ClosedUrl": {
+      "Value": {
+        "Fn::GetAtt": [
+          "FrontendUrl",
+          "FunctionUrl"
+        ]
+      }
+    }
+  }
+}

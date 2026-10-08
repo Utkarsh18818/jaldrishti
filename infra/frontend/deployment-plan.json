@@ -1,0 +1,21 @@
+{
+  "deploy": false,
+  "account": "YOUR_AWS_ACCOUNT_ID",
+  "region": "ap-southeast-2",
+  "runtimeServices": [
+    "Lambda",
+    "DynamoDB"
+  ],
+  "backend": "jaldrishti-real-backend",
+  "table": "jaldrishti-real-campus-state",
+  "transport": "IAM-signed Lambda Invoke",
+  "frontendEndpoint": "HTTPS Lambda Function URL",
+  "initialAuthType": "AWS_IAM",
+  "browserAuthTypeAfterExplicitPublicAccessApproval": "NONE with server operator session on all protected endpoints",
+  "staticAssets": "Included in Lambda ZIP; no CDN or asset bucket",
+  "secrets": "Injected privately into encrypted Lambda runtime environment; never in source/build/plan",
+  "upload": "Direct UpdateFunctionCode ZipFile; no S3 release dependency. Enforce compressed 50 MiB and unzipped 250 MiB including layer.",
+  "linuxBuild": "Existing or separately approved Linux Node 24 environment; no CodeBuild project or Docker installation planned",
+  "rollback": "Retained published Lambda versions, stable alias, previous ZIPs/assets/configuration",
+  "publicAccess": false
+}
