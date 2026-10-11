@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { DecisionBrief } from "@/features/decision/panel";
 import { Brand, Panel, Eyebrow } from "@/components/ui";
 import { StorageChart } from "@/features/forecast/chart";
 import {
@@ -940,6 +941,7 @@ export function AnalysisWorkspace() {
                     </label>
                   </div>
                 )}
+                {tab === "Simulator" && analysis && <DecisionBrief context={{ mode: "REAL_ANALYSIS", analysis }} controls={controls} />}
                 <StorageChart
                   baseline={result.baseline}
                   intervention={

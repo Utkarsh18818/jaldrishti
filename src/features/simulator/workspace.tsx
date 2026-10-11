@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { DecisionBrief } from "@/features/decision/panel";
 import { useSearchParams } from "next/navigation";
 import { useOperations } from "@/features/system/context";
 import { Eyebrow } from "@/components/ui";
@@ -39,6 +40,7 @@ export function SimulatorWorkspace() {
         <span className="preview-label">{modeLabel}</span>
       </div>
       <ScenarioResults result={result} revision={revision} />
+      <DecisionBrief context={{ mode: "SAMPLE_DEMO", input, siteName: "Pune Sample Demo" }} controls={controls} />
       <p className="scenario-policy-note">
         Critical reserve is a demo operational policy threshold (
         {formatLitres(forecastPolicy.criticalReserveLitres)}). It represents

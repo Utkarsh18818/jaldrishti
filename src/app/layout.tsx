@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/geist";
 import "./globals.css";
+import "./design-refresh.css";
+import { ProductMotion } from "@/components/product-motion";
 export const metadata: Metadata = {
   title: "JalDrishti — Water security, in sight",
   description:
@@ -16,6 +18,7 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <ProductMotion />
       </body>
     </html>
   );

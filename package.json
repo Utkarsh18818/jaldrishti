@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "backend:build": "node infra/build.mjs",
     "backend:mock": "node infra/local-server.ts",
-    "test": "node --test src/features/forecast/model.test.ts src/features/simulator/adapter.test.ts src/features/environment/environment.test.ts src/features/system/model.test.ts src/lib/api-client.test.ts infra/lambda/handlers.test.ts src/features/analysis/analysis.test.ts src/features/analysis/cloud.test.ts src/lib/hosting-security.test.ts src/lib/public-access.test.ts",
+    "test": "node --test src/features/forecast/model.test.ts src/features/simulator/adapter.test.ts src/features/environment/environment.test.ts src/features/system/model.test.ts src/lib/api-client.test.ts infra/lambda/handlers.test.ts src/features/analysis/analysis.test.ts src/features/analysis/cloud.test.ts src/lib/hosting-security.test.ts src/lib/public-access.test.ts src/features/decision/brief.test.ts",
     "frontend:templates": "node infra/frontend/generate-templates.mjs",
     "frontend:package:linux": "node infra/frontend/package-linux.mjs"
   },
