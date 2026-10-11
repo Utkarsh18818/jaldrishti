@@ -119,3 +119,24 @@
 @media (hover: none) { .landing-premium .button:hover, .dashboard .dashboard-navigation a:hover { transform: none; } }
 @media (max-width: 780px) { .water-atmosphere { inset: 0; }.water-atmosphere span { left: -70%; top: 8%; }.product-film-controls { padding-inline: 16px; } }
 @media (prefers-reduced-motion: reduce) { .water-atmosphere span, .loading-water i { animation: none; }.landing-premium *, .dashboard .dashboard-navigation a { transition: none !important; }.landing-premium .button:hover, .premium-text-link:hover svg, .premium-journey a:hover svg, .premium-preview-foot a:hover, .dashboard .dashboard-navigation a:hover { transform: none; } }
+
+/* Keep navigation reachable without covering forms or charts. */
+.nav-planned { margin-left:auto; font-size:9px; opacity:.75; }
+.demo-reference,.setup-guide { color:var(--muted); font-size:13px; line-height:1.7; }
+.setup-guide { padding:16px 20px; border:1px solid var(--line); border-radius:8px; margin:20px 0; }
+.setup-guide ol { padding-left:20px; }
+.analysis-cloud { margin-top:24px; scroll-margin-top:90px; }
+.analysis-cloud > summary { cursor:pointer; min-height:44px; padding:14px; border:1px solid var(--line); border-radius:6px; }
+@media(max-width:600px) {
+ .dashboard .sidebar { order:0; position:sticky; top:0; z-index:30; padding:8px; border-bottom:1px solid var(--line); border-top:0; }
+ .dashboard .sidebar .brand,.dashboard .sidebar .sidebar-label,.dashboard .sidebar .location,.dashboard .sidebar .sidebar-bottom { display:none; }
+ .dashboard .dashboard-navigation { display:flex; flex-direction:row; overflow-x:auto; gap:4px; margin:0; padding:2px; }
+ .dashboard .dashboard-navigation a { flex:0 0 auto; min-height:44px; padding:8px 10px; gap:6px; font-size:11px; }
+ .dashboard .dashboard-navigation a span { display:inline; }
+ .dashboard .dashboard-navigation a svg { width:15px; height:15px; }
+ .dashboard .dashboard-navigation .nav-planned { font-size:8px; }
+ .analysis-tabs[aria-label="Analysis views"] { position:sticky; top:0; z-index:25; flex-wrap:nowrap; overflow-x:auto; background:#0c2326; padding:8px 0; }
+ .analysis-tabs[aria-label="Analysis views"] button { flex:0 0 auto; min-height:44px; }
+ .setup-guide { padding:12px; }
+}
+.dashboard-navigation a[href="/dashboard/alerts"], .dashboard-navigation a[href="/dashboard/actions"], .dashboard-navigation a[href="/dashboard/impact"] { order:1; }

@@ -51,6 +51,7 @@ export function ForecastWorkspace() {
             {baseline.criticalCrossing?.day.toFixed(1) ?? "—"}
             <span>DAYS</span>
           </div>
+          <p className="demo-reference">Days from the sample reading: {formatForecastTime(input.startTimeMs)}. Synthetic example, not a countdown from today.</p>
           <p className="prediction-time">
             {baseline.criticalCrossing
               ? formatForecastTime(baseline.criticalCrossing.timeMs)

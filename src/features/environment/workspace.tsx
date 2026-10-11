@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Eyebrow, Panel } from "@/components/ui";
 import {
@@ -7,7 +8,7 @@ import {
   environmentalLocation,
 } from "./model";
 import type { EnvironmentalResult } from "./model";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, ApiError } from "@/lib/api-client";
 const time = (value: string) =>
   new Intl.DateTimeFormat("en-IN", {
     timeZone: "Asia/Kolkata",
@@ -25,6 +26,7 @@ export function EnvironmentalWorkspace() {
   const [mode, setMode] = useState<"api" | "demo">("demo");
   const [revision, setRevision] = useState(0);
   const [clock, setClock] = useState<number | null>(null);
+  const [accessRequired, setAccessRequired] = useState(false);
   const [boundary, setBoundary] = useState("");
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 60000);
@@ -37,13 +39,16 @@ export function EnvironmentalWorkspace() {
       .environment()
       .then(({ data, boundary }) => {
         if (active) {
+          setAccessRequired(false);
           setBoundary(boundary);
           setResult(data);
           setLoading(false);
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (active) {
+          setAccessRequired(error instanceof ApiError && [401, 403].includes(error.status));
+          setBoundary("");
           setResult({
             status: "unavailable",
             snapshot: null,
@@ -64,6 +69,8 @@ export function EnvironmentalWorkspace() {
       ? classifyFreshness(snapshot, clock)
       : result?.freshness;
   function switchMode(next: "api" | "demo") {
+    setAccessRequired(false);
+    setBoundary("");
     setMode(next);
     setLoading(next === "api");
     setResult(next === "demo" ? demoEnvironment(Date.now()) : null);
@@ -103,7 +110,7 @@ export function EnvironmentalWorkspace() {
               disabled={loading}
               onClick={() => switchMode("api")}
             >
-              {loading ? "Fetching…" : "Refresh public data"}
+              {loading ? "Fetching…" : "Refresh weather (operator access)"}
             </button>
             <button
               className="button secondary"
@@ -120,7 +127,7 @@ export function EnvironmentalWorkspace() {
             : result?.status === "demo"
               ? "DEMO · Illustrative values · Not downloaded observations"
               : result?.status === "unavailable"
-                ? "UNAVAILABLE · Live context requires operator access; no values substituted"
+                ? accessRequired ? "OPERATOR ACCESS REQUIRED · No values substituted" : "UNAVAILABLE · No values substituted"
                 : `${result?.status === "cached" ? "LAST SUCCESSFUL RESPONSE" : "PUBLIC API RESPONSE"} · ${freshness?.toUpperCase()}`}
           {result?.issue && result.issue !== "offline-demo"
             ? ` · ${result.issue}`
@@ -217,7 +224,7 @@ export function EnvironmentalWorkspace() {
           </>
         ) : !loading ? (
           <p className="environment-note">
-            Weather context is temporarily unavailable. Retry later or
+            {accessRequired ? <>Unlock the operator session in <Link href="/analysis#cloud-access">Real Analysis cloud access</Link> before fetching weather. </> : "Weather context is temporarily unavailable. Retry later or "}
             explicitly select offline demo. Your operational forecast and
             simulator continue to work.
           </p>

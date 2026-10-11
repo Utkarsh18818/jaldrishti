@@ -1,5 +1,6 @@
 "use client";
 import { useOperations } from "@/features/system/context";
+import { formatForecastTime } from "@/features/forecast/demo-forecast";
 import { formatLitres } from "@/lib/demo-data";
 import { Eyebrow } from "@/components/ui";
 import {
@@ -10,7 +11,7 @@ import {
   Anomaly,
 } from "./insights";
 export function Overview() {
-  const { view: demo, modeLabel, provenance } = useOperations();
+  const { view: demo, input, modeLabel, provenance } = useOperations();
   return (
     <>
       <div className="overview-heading">
@@ -23,6 +24,7 @@ export function Overview() {
         </div>
         <span className="preview-label">MODEL OUTPUT · {modeLabel}</span>
       </div>
+      <p className="demo-reference">Synthetic sample · Forecast days start at {formatForecastTime(input.startTimeMs)}, not today. Regional weather does not measure tank storage.</p>
       <div className="overview-story">
         <div className="forecast-row">
           <Prediction />

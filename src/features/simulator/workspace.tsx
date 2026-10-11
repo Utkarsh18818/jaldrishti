@@ -39,6 +39,7 @@ export function SimulatorWorkspace() {
         </div>
         <span className="preview-label">{modeLabel}</span>
       </div>
+      <p className="demo-reference">Synthetic example · All days are measured from {formatForecastTime(input.startTimeMs)}, not today.</p>
       <ScenarioResults result={result} revision={revision} />
       <DecisionBrief context={{ mode: "SAMPLE_DEMO", input, siteName: "Pune Sample Demo" }} controls={controls} />
       <p className="scenario-policy-note">

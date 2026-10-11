@@ -445,36 +445,12 @@ export function AnalysisWorkspace() {
               </button>
             ))}
           </nav>
+          {tab === "Setup" && <div className="setup-guide"><p>Calculate locally in three steps. Cloud access is optional.</p><ol><li>Confirm your site location.</li><li>Enter actual readings or import daily records.</li><li>Choose reserves, then run the analysis.</li></ol><a href="#cloud-access">Already have a saved site? Open cloud access ↓</a></div>}
           {error && (
             <p role="alert" className="system-error">
               {error}
             </p>
           )}
-          <Panel className="analysis-panel">
-            <Eyebrow>PRIVATE CLOUD PERSISTENCE · REAL ANALYSIS ONLY</Eyebrow>
-            <h2>Your saved analysis</h2>
-            <p role="status" aria-live="polite">{cloudStatus.toUpperCase()} · {cloudMessage || "Checking private cloud access…"}</p>
-            {!unlocked && (
-              <div className="analysis-fields">
-                <label className="system-field">Operator access code
-                  <input type="password" autoComplete="off" value={accessCode} disabled={cloudBusy} onChange={e => setAccessCode(e.target.value)} />
-                </label>
-                <button className="button secondary" disabled={cloudBusy || !accessCode} onClick={() => void unlockCloud()}>Unlock private cloud</button>
-              </div>
-            )}
-            <div className="analysis-tabs">
-              <button className="button" disabled={cloudBusy || !unlocked || !analysis || knownVersion === null || needsReload || cloudStatus === "saved"} onClick={() => void saveCloud()}>Save Real Analysis to AWS</button>
-              <button className="button secondary" disabled={cloudBusy || !unlocked} onClick={() => void reloadCloud()}>Reload cloud state (replace local edits)</button>
-              {unlocked && <button className="button secondary" disabled={cloudBusy} onClick={() => void lockCloud()}>Lock cloud access</button>}
-            </div>
-            <p>Save uploads your validated operational inputs and accepted CSV records to the private single-site AWS record. Local drafts and unsaved edits are not persisted. Sample Demo is stored separately.</p>
-            {campus && <p>Schema {campus.schemaVersion} · revision {campus.version} · {campus.updatedAt}<br />Forecast: {campus.modelMetadata.forecast} · Index: {campus.modelMetadata.indexVersion} · {campus.environmentalProvenance.length} saved environmental source entries</p>}
-            {campus && <details className="analysis-import"><summary>Saved environmental provenance</summary>
-              {campus.environmentalProvenance.length ? <div className="system-table"><table><thead><tr><th>Variable / source</th><th>Valid time / retrieval</th><th>Model / geographic context</th></tr></thead><tbody>
-                {campus.environmentalProvenance.map((p, i) => <tr key={`${p.variable}-${i}`}><th>{p.variable}<small>{p.category} · {p.source}</small></th><td>{p.timestamp}<br />{p.retrievedAt}</td><td>{p.model}<br />{p.coordinates.latitude}, {p.coordinates.longitude}<small>{p.context}</small></td></tr>)}
-              </tbody></table></div> : <p>No environmental source metadata was available at save time. Operational inputs were saved without a substitute.</p>}
-            </details>}
-          </Panel>
           <fieldset disabled={cloudBusy} aria-label="Real Analysis inputs and results" style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
           {tab === "Setup" && (
             <>
@@ -522,6 +498,7 @@ export function AnalysisWorkspace() {
                 <button className="button" onClick={saveLocation}>
                   Set location & load environmental data
                 </button>
+                <p>Find decimal coordinates from your site map; use an IANA timezone such as Asia/Kolkata. These fields do not measure tank storage.</p>
                 <p role="status">{envStatus}</p>
               </Panel>
               <Panel className="analysis-panel">
@@ -579,6 +556,7 @@ export function AnalysisWorkspace() {
                     </select>
                   </label>
                 </div>
+                <p>Use the time your storage reading was taken, including its timezone offset. Capacity is the tank’s maximum volume; supply and consumption are daily totals, not cumulative meter readings.</p>
                 <details className="analysis-import">
                   <summary>Import operational CSV (accepted records saved on explicit cloud save)</summary>
                   <p>
@@ -589,6 +567,7 @@ export function AnalysisWorkspace() {
                     automatically summed. Consumption/supply represent the
                     preceding daily interval. Maximum 500 rows / 500 KB.
                   </p>
+                  <p><a href="/templates/operational-records.csv" download>Download blank CSV template ↓</a> · No example readings are included. Fill it only with permissioned site records.</p>
                   <label>
                     CSV file
                     <input
@@ -1319,6 +1298,35 @@ export function AnalysisWorkspace() {
             </>
           )}
           </fieldset>
+<details className="analysis-cloud" id="cloud-access">
+<summary>Optional: protected cloud save / load</summary>
+          <Panel className="analysis-panel">
+            <Eyebrow>PRIVATE CLOUD PERSISTENCE · REAL ANALYSIS ONLY</Eyebrow>
+            <h2>Your saved analysis</h2>
+            <p role="status" aria-live="polite">{cloudStatus.toUpperCase()} · {cloudMessage || "Checking private cloud access…"}</p>
+            {!unlocked && (
+              <div className="analysis-fields">
+                <label className="system-field">Operator access code
+                  <input type="password" autoComplete="off" value={accessCode} disabled={cloudBusy} onChange={e => setAccessCode(e.target.value)} />
+                </label>
+                <button className="button secondary" disabled={cloudBusy || !accessCode} onClick={() => void unlockCloud()}>Unlock private cloud</button>
+              </div>
+            )}
+            <div className="analysis-tabs">
+              <button className="button" disabled={cloudBusy || !unlocked || !analysis || knownVersion === null || needsReload || cloudStatus === "saved"} onClick={() => void saveCloud()}>Save Real Analysis to AWS</button>
+              <button className="button secondary" disabled={cloudBusy || !unlocked} onClick={() => void reloadCloud()}>Reload cloud state (replace local edits)</button>
+              {unlocked && <button className="button secondary" disabled={cloudBusy} onClick={() => void lockCloud()}>Lock cloud access</button>}
+            </div>
+            <p>Save uploads your validated operational inputs and accepted CSV records to the private single-site AWS record. Local drafts and unsaved edits are not persisted. Sample Demo is stored separately.</p>
+            {campus && <p>Schema {campus.schemaVersion} · revision {campus.version} · {campus.updatedAt}<br />Forecast: {campus.modelMetadata.forecast} · Index: {campus.modelMetadata.indexVersion} · {campus.environmentalProvenance.length} saved environmental source entries</p>}
+            {campus && <details className="analysis-import"><summary>Saved environmental provenance</summary>
+              {campus.environmentalProvenance.length ? <div className="system-table"><table><thead><tr><th>Variable / source</th><th>Valid time / retrieval</th><th>Model / geographic context</th></tr></thead><tbody>
+                {campus.environmentalProvenance.map((p, i) => <tr key={`${p.variable}-${i}`}><th>{p.variable}<small>{p.category} · {p.source}</small></th><td>{p.timestamp}<br />{p.retrievedAt}</td><td>{p.model}<br />{p.coordinates.latitude}, {p.coordinates.longitude}<small>{p.context}</small></td></tr>)}
+              </tbody></table></div> : <p>No environmental source metadata was available at save time. Operational inputs were saved without a substitute.</p>}
+            </details>}
+          </Panel>
+</details>
+
         </main>
         <footer className="dashboard-footer">
           REAL ANALYSIS · {cloudStatus.toUpperCase()} · Rainfall is

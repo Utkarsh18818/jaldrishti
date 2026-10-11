@@ -19,6 +19,8 @@ Institutions and communities need to understand how storage, consumption and unr
 - Open-Meteo regional model/reanalysis ingestion, normalization, timestamps, freshness, caching and explicit unavailable states.
 - Operator-only schema-v2 cloud save/load, revision conflicts and shared-engine backend forecasts.
 - Responsive public Sample Demo with local calculations and no AWS storage calls.
+- Inspectable scenario decision briefs with source timestamps, model version and local JSON export.
+- Three-step Real Analysis setup, a blank CSV template, optional protected cloud access and reachable mobile navigation.
 
 [Feature matrix and exclusions](docs/submission/FEATURES.md)
 
@@ -60,7 +62,7 @@ flowchart LR
 
 The public HTTPS Function URL delivers the frontend. Protected Next.js handlers require an operator session and exact mutation origin; the execution role invokes only the existing backend function. Backend IAM is independent of CORS, with an additional token gate for Real Analysis. The retained IAM-protected HTTP API is a legacy entry point, not the frontend persistence transport. No WAF, CloudFront, VPC/NAT or additional database is used.
 
-Production is frontend version 5 in Sydney. Repository preparation does not redeploy it. [Architecture and security](docs/submission/ARCHITECTURE.md)
+Production uses the stable frontend Lambda live alias in Sydney. Immutable releases preserve a prior version for rollback. [Architecture and security](docs/submission/ARCHITECTURE.md)
 
 ## Technologies
 
@@ -108,11 +110,16 @@ npx --no-install next typegen
 npm run typecheck
 ```
 
-The full suite needs root and `infra` dependencies. Existing validation includes **163 passing tests** and **44 responsive checks** during public launch; these counts describe tested cases, not scientific accuracy. Automated tests mock external APIs. Optional local production preview:
+The full suite needs root and `infra` dependencies. Existing validation includes **172 passing tests** and **44 responsive checks** during public launch; these counts describe tested cases, not scientific accuracy. Automated tests mock external APIs. Optional local production preview:
 
 ```powershell
 npm run build
-npm start
+New-Item -ItemType Directory -Force .next/standalone/public,.next/standalone/.next/static | Out-Null
+Copy-Item public/* .next/standalone/public -Recurse -Force
+Copy-Item .next/static/* .next/standalone/.next/static -Recurse -Force
+$env:PORT = '3000'
+$env:HOSTNAME = '127.0.0.1'
+node .next/standalone/server.js
 ```
 
 The safe-build wrapper excludes local secrets from standalone output. Git excludes dependencies, caches, private reports, ZIPs and operational helpers. [Infrastructure reference](infra/README.md)
@@ -135,3 +142,5 @@ Existing anonymous public-browser captures, not generated mockups. Displayed val
 ## Hackathon submission
 
 Prepared for **WeMakeDevs + AWS Environmental Hacks 2026**. See the [official event](https://www.wemakedevs.org/aws/env) and [rules](https://www.wemakedevs.org/aws/env/rules). Participation, enrollment verification, eligibility and permitted development history must be checked by the submitter. This README does not assert compliance or invent development dates or awards.
+
+AI assistance: OpenAI Codex was used for implementation, review and documentation. [Submission blockers](docs/submission/SUBMISSION-READINESS.md) · [Permissioned pilot kit](docs/submission/pilot/PILOT-GUIDE.md). No completed pilot or measured savings is claimed.

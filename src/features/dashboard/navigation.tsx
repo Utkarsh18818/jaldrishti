@@ -35,9 +35,9 @@ export function DashboardNavigation() {
           >
             <Icon size={19} />
             <span>{title}</span>
-            {title === "Alerts" && (
-              <span className="nav-alert" aria-label="Demo alert">
-                •
+            {["Alerts", "Actions", "Impact"].includes(title) && (
+              <span className="nav-planned">
+                Planned
               </span>
             )}
           </Link>
